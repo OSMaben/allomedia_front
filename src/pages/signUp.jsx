@@ -1,45 +1,32 @@
-
-import React, {useState} from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 import "../App.css";
-import UseNavigate, {useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const SignUp = () => {
-    const [errors,setErrors] = useState([]);
     const [loader, setLoader] = useState(false);
-    const [formDate, setFormDate] = useState({
-        name: "",
-        email:"",
-        number: "",
-        password: "",
-        address: ""
-    })
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm();
+
     const navigate = useNavigate();
 
-    const handleChanges  = (e) =>
-    {
-        setFormDate({
-            ...formDate,
-            [e.target.name]: e.target.value
-        })
-    }
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+    const handleFormSubmit = async (formData) => {
         setLoader(true);
-        setErrors('');
-
         try {
-            const response = await axios.post('http://localhost:3001/api/register', formDate);
+            const response = await axios.post("http://localhost:3001/api/register", formData);
             console.log(response.data);
 
             setLoader(false);
-
-            toast.success('You have been registered successfully!');
-           setTimeout(() =>{
-               navigate('/auth/confirmEmail')
-           },1000)
-
+            toast.success("You have been registered successfully!");
+            setTimeout(() => {
+                navigate("/auth/confirmEmail");
+            }, 1000);
         } catch (err) {
             setLoader(false);
 
@@ -49,47 +36,33 @@ const SignUp = () => {
                 if (errorResponse.details) {
                     const validationMessages = errorResponse.details
                         .map((detail) => detail.message)
-                        .join(', ');
-
-                    setErrors(validationMessages);
+                        .join(", ");
                     toast.error(`Validation Error: ${validationMessages}`);
-                }
-                else if (errorResponse.msg) {
-                    setErrors(errorResponse.msg);
+                } else if (errorResponse.msg) {
                     toast.error(`Error: ${errorResponse.msg}`);
                 }
             } else {
                 const generalErrorMessage = `There was an error: ${err.message}`;
-                setErrors(generalErrorMessage);
                 toast.error(generalErrorMessage);
             }
 
-            console.log('Error occurred during form submission:', err);
+            console.log("Error occurred during form submission:", err);
         }
     };
 
-
-
-
     return (
-
         <section className="bg-gray-1 py-20 dark:bg-dark lg:py-[120px]">
-            <Toaster position="top-right"
-                     reverseOrder={false}/>
+            <Toaster position="top-right" reverseOrder={false} />
             <div className="container mx-auto">
                 <div className="-mx-4 flex flex-wrap">
                     <div className="w-full px-4">
-                        <div className="relative mx-auto max-w-[52%] overflow-hidden rounded-lg bg-white px-10 py-16 text-center dark:bg-dark-2 sm:px-12 md:px-[60px]">
+                        <div
+                            className="relative mx-auto max-w-[52%] overflow-hidden rounded-lg bg-white px-10 py-16 text-center dark:bg-dark-2 sm:px-12 md:px-[60px]">
                             <div className="mb-10 text-center md:mb-16">
-                                <a
-                                    href="/#"
-                                    className="mx-auto inline-block max-w-[160px]"
-                                >
-                                    <img
-                                        src="https://cdn.tailgrids.com/2.0/image/assets/images/logo/logo-primary.svg"
-                                        alt="logo"
-                                    />
-                                </a>
+                                <Link to="/" className="mx-auto inline-block max-w-[160px]">
+                                    <img src="https://cdn.tailgrids.com/2.0/image/assets/images/logo/logo-primary.svg"
+                                         alt="logo"/>
+                                </Link>
                             </div>
                             {errors && typeof errors === 'string' && errors.trim() !== '' && (
                                 <div className="error-container">
@@ -97,32 +70,128 @@ const SignUp = () => {
                                     <div className="error-text">{errors}</div>
                                 </div>
                             )}
-
-
-                            <form method="POST" onSubmit={handleFormSubmit}>
-
+                            <form method="POST" onSubmit={handleSubmit(handleFormSubmit)}>
                                 <div className="flex gap-4 w-full">
-                                    <InputBox type="text" placeholder="Name" name="name" value={formDate.name} onChange={handleChanges}   />
-                                    <InputBox type="tele" placeholder="Number" name="number" value={formDate.number} onChange={handleChanges}   />
+                                    <div className="w-full">
+                                        <input
+                                            className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                            type="text"
+                                            placeholder="Name"
+                                            name="name"
+                                            {...register("name", {
+                                                required: "name is required",
+                                                pattern: {
+                                                    value: /^[a-zA-Z0-9_-]+$/,
+                                                    message: "Please enter a valid name",
+                                                },
+                                            })}
+                                        />
+                                        {errors.name && (
+                                            <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                                {errors.name.message}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="w-full">
+                                        <input
+                                            className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                            type="tel"
+                                            placeholder="Number"
+                                            {...register("number", {
+                                                required: "Number is required",
+                                                pattern: {
+                                                    value: /^[0-9]+$/,
+                                                    message: "Number can only contain digits",
+                                                },
+                                            })}
+
+                                        />
+                                        {errors.number && (
+                                            <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                                {errors.number.message}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <InputBox type="text" placeholder="Address" name="address" value={formDate.address}  onChange={handleChanges} />
-                                <InputBox type="email" placeholder="Email" name="email" value={formDate.email}  onChange={handleChanges}/>
-                                <InputBox type="password" placeholder="Password"  name="password" value={formDate.password} onChange={handleChanges}
+
+                                <input
+                                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                    type="text"
+                                    placeholder="Address"
+                                    name="address"
+                                    {...register("address", {
+                                        required: "Address is required",
+                                        pattern: {
+                                            value: /^[a-zA-Z0-9\s,-]+$/,
+                                            message: "Address can only include letters, numbers, spaces, commas, and hyphens",
+                                        },
+                                    })}
                                 />
+                                {errors.address && (
+                                    <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                        {errors.address.message}
+                                    </div>
+                                )}
+
+                                <input
+                                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                    type="email"
+                                    placeholder="Email"
+                                    name="email"
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                                    })}
+                                />
+                                {errors.email && (
+                                    <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                        {errors.email.message}
+                                    </div>
+                                )}
+
+                                <input
+                                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                    type="password"
+                                    placeholder="Password"
+                                    name="password"
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 6,
+                                            message: "Password must be at least 6 characters long",
+                                        },
+                                        maxLength: {
+                                            value: 20,
+                                            message: "Password must be at max 20 characters long",
+                                        }
+
+                                    })}
+                                />
+                                {errors.password && (
+                                    <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                        {errors.password.message}
+                                    </div>
+                                )}
+
                                 <div className="mb-10">
-
-
-                                    <button type="submit" disabled={loader} className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90 bg-[#090e34]">
+                                    <button
+                                        type="submit"
+                                        disabled={loader}
+                                        className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90 bg-[#090e34]"
+                                    >
                                         {loader ? (
                                             <img
                                                 src="https://cdn.pixabay.com/animation/2023/05/02/04/29/04-29-06-428_512.gif"
-                                                alt="Loading..." className="loading-gif"/>
+                                                alt="Loading..."
+                                                className="loading-gif"
+                                            />
                                         ) : (
-                                            'Submit'
+                                            "Submit"
                                         )}
                                     </button>
                                 </div>
                             </form>
+
                             <p className="mb-6 text-base text-secondary-color dark:text-dark-7">
                                 Connect With
                             </p>
@@ -185,12 +254,6 @@ const SignUp = () => {
                                     </a>
                                 </li>
                             </ul>
-                            <a
-                                href="/#"
-                                className="mb-2 inline-block text-base text-dark hover:text-primary hover:underline dark:text-black"
-                            >
-                                Forget Password?
-                            </a>
                             <p className="text-base text-body-color dark:text-dark-6">
                                 <span className="pr-0.5">Already Have An Account?</span>
                                 <Link
@@ -200,224 +263,223 @@ const SignUp = () => {
                                     Sign in
                                 </Link>
                             </p>
-
                             <div>
-                <span className="absolute right-1 top-1">
-                  <svg
-                      width="40"
-                      height="40"
-                      viewBox="0 0 40 40"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                        cx="1.39737"
-                        cy="38.6026"
-                        r="1.39737"
-                        transform="rotate(-90 1.39737 38.6026)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="1.39737"
-                        cy="1.99122"
-                        r="1.39737"
-                        transform="rotate(-90 1.39737 1.99122)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="13.6943"
-                        cy="38.6026"
-                        r="1.39737"
-                        transform="rotate(-90 13.6943 38.6026)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="13.6943"
-                        cy="1.99122"
-                        r="1.39737"
-                        transform="rotate(-90 13.6943 1.99122)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="25.9911"
-                        cy="38.6026"
-                        r="1.39737"
-                        transform="rotate(-90 25.9911 38.6026)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="25.9911"
-                        cy="1.99122"
-                        r="1.39737"
-                        transform="rotate(-90 25.9911 1.99122)"
-                            fill="#3056D3"
-                    />
-                    <circle
-                        cx="38.288"
-                        cy="38.6026"
-                        r="1.39737"
-                        transform="rotate(-90 38.288 38.6026)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="38.288"
-                        cy="1.99122"
-                        r="1.39737"
-                        transform="rotate(-90 38.288 1.99122)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="1.39737"
-                        cy="26.3057"
-                        r="1.39737"
-                        transform="rotate(-90 1.39737 26.3057)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="13.6943"
-                        cy="26.3057"
-                        r="1.39737"
-                        transform="rotate(-90 13.6943 26.3057)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="25.9911"
-                        cy="26.3057"
-                        r="1.39737"
-                        transform="rotate(-90 25.9911 26.3057)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="38.288"
-                        cy="26.3057"
-                        r="1.39737"
-                        transform="rotate(-90 38.288 26.3057)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="1.39737"
-                        cy="14.0086"
-                        r="1.39737"
-                        transform="rotate(-90 1.39737 14.0086)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="13.6943"
-                        cy="14.0086"
-                        r="1.39737"
-                        transform="rotate(-90 13.6943 14.0086)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="25.9911"
-                        cy="14.0086"
-                        r="1.39737"
-                        transform="rotate(-90 25.9911 14.0086)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="38.288"
-                        cy="14.0086"
-                        r="1.39737"
-                        transform="rotate(-90 38.288 14.0086)"
-                        fill="#3056D3"
-                    />
-                  </svg>
-                </span>
-                                <span className="absolute bottom-1 left-1">
-                  <svg
-                      width="29"
-                      height="40"
-                      viewBox="0 0 29 40"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                        cx="2.288"
-                        cy="25.9912"
-                        r="1.39737"
-                        transform="rotate(-90 2.288 25.9912)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="14.5849"
-                        cy="25.9911"
-                        r="1.39737"
-                        transform="rotate(-90 14.5849 25.9911)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="26.7216"
-                        cy="25.9911"
-                        r="1.39737"
-                        transform="rotate(-90 26.7216 25.9911)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="2.288"
-                        cy="13.6944"
-                        r="1.39737"
-                        transform="rotate(-90 2.288 13.6944)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="14.5849"
-                        cy="13.6943"
-                        r="1.39737"
-                        transform="rotate(-90 14.5849 13.6943)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="26.7216"
-                        cy="13.6943"
-                        r="1.39737"
-                        transform="rotate(-90 26.7216 13.6943)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="2.288"
-                        cy="38.0087"
-                        r="1.39737"
-                        transform="rotate(-90 2.288 38.0087)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="2.288"
-                        cy="1.39739"
-                        r="1.39737"
-                        transform="rotate(-90 2.288 1.39739)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="14.5849"
-                        cy="38.0089"
-                        r="1.39737"
-                        transform="rotate(-90 14.5849 38.0089)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="26.7216"
-                        cy="38.0089"
-                        r="1.39737"
-                        transform="rotate(-90 26.7216 38.0089)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="14.5849"
-                        cy="1.39761"
-                        r="1.39737"
-                        transform="rotate(-90 14.5849 1.39761)"
-                        fill="#3056D3"
-                    />
-                    <circle
-                        cx="26.7216"
-                        cy="1.39761"
-                        r="1.39737"
-                        transform="rotate(-90 26.7216 1.39761)"
-                        fill="#3056D3"
-                    />
-                  </svg>
-                </span>
+                            <span className="absolute right-1 top-1">
+                              <svg
+                                  width="40"
+                                  height="40"
+                                  viewBox="0 0 40 40"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <circle
+                                    cx="1.39737"
+                                    cy="38.6026"
+                                    r="1.39737"
+                                    transform="rotate(-90 1.39737 38.6026)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="1.39737"
+                                    cy="1.99122"
+                                    r="1.39737"
+                                    transform="rotate(-90 1.39737 1.99122)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="13.6943"
+                                    cy="38.6026"
+                                    r="1.39737"
+                                    transform="rotate(-90 13.6943 38.6026)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="13.6943"
+                                    cy="1.99122"
+                                    r="1.39737"
+                                    transform="rotate(-90 13.6943 1.99122)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="25.9911"
+                                    cy="38.6026"
+                                    r="1.39737"
+                                    transform="rotate(-90 25.9911 38.6026)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="25.9911"
+                                    cy="1.99122"
+                                    r="1.39737"
+                                    transform="rotate(-90 25.9911 1.99122)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="38.288"
+                                    cy="38.6026"
+                                    r="1.39737"
+                                    transform="rotate(-90 38.288 38.6026)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="38.288"
+                                    cy="1.99122"
+                                    r="1.39737"
+                                    transform="rotate(-90 38.288 1.99122)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="1.39737"
+                                    cy="26.3057"
+                                    r="1.39737"
+                                    transform="rotate(-90 1.39737 26.3057)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="13.6943"
+                                    cy="26.3057"
+                                    r="1.39737"
+                                    transform="rotate(-90 13.6943 26.3057)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="25.9911"
+                                    cy="26.3057"
+                                    r="1.39737"
+                                    transform="rotate(-90 25.9911 26.3057)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="38.288"
+                                    cy="26.3057"
+                                    r="1.39737"
+                                    transform="rotate(-90 38.288 26.3057)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="1.39737"
+                                    cy="14.0086"
+                                    r="1.39737"
+                                    transform="rotate(-90 1.39737 14.0086)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="13.6943"
+                                    cy="14.0086"
+                                    r="1.39737"
+                                    transform="rotate(-90 13.6943 14.0086)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="25.9911"
+                                    cy="14.0086"
+                                    r="1.39737"
+                                    transform="rotate(-90 25.9911 14.0086)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="38.288"
+                                    cy="14.0086"
+                                    r="1.39737"
+                                    transform="rotate(-90 38.288 14.0086)"
+                                    fill="#3056D3"
+                                />
+                              </svg>
+                            </span>
+                                            <span className="absolute bottom-1 left-1">
+                              <svg
+                                  width="29"
+                                  height="40"
+                                  viewBox="0 0 29 40"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <circle
+                                    cx="2.288"
+                                    cy="25.9912"
+                                    r="1.39737"
+                                    transform="rotate(-90 2.288 25.9912)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="14.5849"
+                                    cy="25.9911"
+                                    r="1.39737"
+                                    transform="rotate(-90 14.5849 25.9911)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="26.7216"
+                                    cy="25.9911"
+                                    r="1.39737"
+                                    transform="rotate(-90 26.7216 25.9911)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="2.288"
+                                    cy="13.6944"
+                                    r="1.39737"
+                                    transform="rotate(-90 2.288 13.6944)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="14.5849"
+                                    cy="13.6943"
+                                    r="1.39737"
+                                    transform="rotate(-90 14.5849 13.6943)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="26.7216"
+                                    cy="13.6943"
+                                    r="1.39737"
+                                    transform="rotate(-90 26.7216 13.6943)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="2.288"
+                                    cy="38.0087"
+                                    r="1.39737"
+                                    transform="rotate(-90 2.288 38.0087)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="2.288"
+                                    cy="1.39739"
+                                    r="1.39737"
+                                    transform="rotate(-90 2.288 1.39739)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="14.5849"
+                                    cy="38.0089"
+                                    r="1.39737"
+                                    transform="rotate(-90 14.5849 38.0089)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="26.7216"
+                                    cy="38.0089"
+                                    r="1.39737"
+                                    transform="rotate(-90 26.7216 38.0089)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="14.5849"
+                                    cy="1.39761"
+                                    r="1.39737"
+                                    transform="rotate(-90 14.5849 1.39761)"
+                                    fill="#3056D3"
+                                />
+                                <circle
+                                    cx="26.7216"
+                                    cy="1.39761"
+                                    r="1.39737"
+                                    transform="rotate(-90 26.7216 1.39761)"
+                                    fill="#3056D3"
+                                />
+                              </svg>
+                            </span>
                             </div>
                         </div>
                     </div>
@@ -429,10 +491,10 @@ const SignUp = () => {
 
 export default SignUp;
 
-const InputBox = ({ type, placeholder, name, value,onChange }) => {
+const InputBox = ({type, placeholder, name, value, onChange}) => {
     return (
 
-        <div className="mb-6 w-full">
+        <div className="mb-4 w-full">
             <input
                 type={type}
                 placeholder={placeholder}

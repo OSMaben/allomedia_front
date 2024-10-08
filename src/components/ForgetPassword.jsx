@@ -15,11 +15,9 @@ export default function ForgetPassword() {
 
 
 
-    const handleFormSubmission = async (e) => {
-        // e.preventDefault();
-        console.log(e)
+    const handleFormSubmission = async (dataForm) => {
         try {
-            const response = await axios.post('http://localhost:3001/api/reset-password', { register });
+            const response = await axios.post('http://localhost:3001/api/reset-password', dataForm );
             console.log(response.data);
             toast.success('A password reset link has been sent to your email!');
 
@@ -64,16 +62,14 @@ export default function ForgetPassword() {
                                         <label htmlFor="email">
                                             <p className="font-medium text-slate-700 pb-2">Email Address</p>
                                             <input
-                                                {...register("email", {
-                                                    required: "email is required",
-                                                    pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-                                                })}
-                                                id="email"
-                                                name="email"
+                                                className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
                                                 type="email"
-                                                className="w-full py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
-                                                placeholder="Enter email address"
-
+                                                placeholder="Email"
+                                                name="email"
+                                                {...register("email", {
+                                                    required: "Email is required",
+                                                    pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                                                })}
                                             />
                                             {errors.email && (
                                                 <div className="text-red-500  p-2 mt-1 text-sm">

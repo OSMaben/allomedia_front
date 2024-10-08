@@ -4,12 +4,12 @@ import {useNavigate} from "react-router-dom";
 const ListItem = ({ children, NavLink }) => {
     return (
         <li>
-            <a
-                href={NavLink}
+            <Link
+                tp={NavLink}
                 className="mr-1 flex rounded-full border border-transparent px-[18px] py-[5px] text-base font-medium text-dark hover:border-primary hover:text-primary dark:text-white lg:inline-flex lg:text-white lg:hover:border-white lg:hover:text-white"
             >
                 {children}
-            </a>
+            </Link>
         </li>
     );
 };
@@ -36,13 +36,13 @@ const Navbar = () => {
             <div className="container mx-auto">
                 <div className="relative flex items-center justify-between -mx-4">
                     <div className="max-w-full px-4 w-60">
-                        <a href="/#" className="block w-full py-5">
+                        <Link to={"/"} className="block w-full py-5">
                             <img
                                 src="https://cdn.tailgrids.com/2.0/image/assets/images/logo/logo-white.svg"
                                 alt="logo"
                                 className="w-full"
                             />
-                        </a>
+                        </Link>
                     </div>
                     <div className="flex items-center justify-between w-full px-4">
                         <div>

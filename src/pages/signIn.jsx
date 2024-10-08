@@ -4,23 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import {Link} from "react-router-dom";
-
+import {useForm} from "react-hook-form";
 
 
 const SignIn = () => {
+    const [errorsLists, setErrorLists] = useState([]);
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loader, setLoader] = useState(false);
-    const [errors, setErrors] = useState('');
     const navigate = useNavigate();
+    const {register,
+        handleSubmit,
+        formState: {errors}
+    } = useForm();
 
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
 
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+
+
+
+
+    const handleFormSubmit = async (formData) => {
+
         setLoader(true);
-        setErrors('');
+        setErrorLists('');
 
         try {
             const response = await axios.post('http://localhost:3001/api/login', formData);
@@ -37,14 +42,16 @@ const SignIn = () => {
                 navigate('/dashboard');
             }
         } catch (err) {
+
             setLoader(false);
+            setErrorLists(err);
             if (err.response && err.response.data) {
                 const errorResponse = err.response.data;
-                setErrors(errorResponse.msg);
+                setErrorLists(`${errorResponse.msg}`);
                 toast.error(`Error: ${errorResponse.msg}`);
             } else {
+                setErrorLists(generalErrorMessage);
                 const generalErrorMessage = `There was an error: ${err.message}`;
-                setErrors(generalErrorMessage);
                 toast.error(generalErrorMessage);
             }
 
@@ -74,21 +81,54 @@ const SignIn = () => {
                                     />
                                 </a>
                             </div>
-                            {errors && typeof errors === 'string' && errors.trim() !== '' && (
+                            {errorsLists && typeof errorsLists === 'string' && errorsLists.trim() !== '' && (
                                 <div className="error-container">
                                     <div className="error-icon">⚠️</div>
-                                    <div className="error-text">{errors}</div>
+                                    <div className="error-text">{errorsLists}</div>
                                 </div>
                             )}
-
-
-                            <form method="POST" onSubmit={handleFormSubmit}>
-                                <InputBox type="email" placeholder="Email" name="email" value={formData.email}  onChange={handleInputChange}/>
-                                <InputBox type="password" placeholder="Password"  name="password" value={formData.password} onChange={handleInputChange}
+                            <form method="POST" onSubmit={handleSubmit(handleFormSubmit)}>
+                                <input
+                                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                    type="email"
+                                    placeholder="Email"
+                                    name="email"
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                                    })}
                                 />
+                                {errors.email && (
+                                    <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                        {errors.email.message}
+                                    </div>
+                                )}
+
+
+                                <input
+                                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-black mb-5"
+                                    type="password"
+                                    placeholder="Password"
+                                    name="password"
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 6,
+                                            message: "Password must be at least 6 characters long",
+                                        },
+                                        maxLength: {
+                                            value: 20,
+                                            message: "Password must be at max 20 characters long",
+                                        }
+
+                                    })}
+                                />
+                                {errors.password && (
+                                    <div className="text-red-500 p-2 mt-1 text-sm text-start">
+                                        {errors.password.message}
+                                    </div>
+                                )}
                                 <div className="mb-10">
-
-
                                     <button type="submit" disabled={loader} className="w-full cursor-pointer rounded-md border border-primary bg-primary px-5 py-3 text-base font-medium text-white transition hover:bg-opacity-90 bg-[#090e34]">
                                         {loader ? (
                                             <img
@@ -163,7 +203,7 @@ const SignIn = () => {
                                 </li>
                             </ul>
                             <Link
-                               to={"/auth/ForgetPassword"}
+                                to={"/auth/ForgetPassword"}
                                 className="mb-2 inline-block text-base text-dark hover:text-primary hover:underline dark:text-black"
                             >
                                 Forget Password?
