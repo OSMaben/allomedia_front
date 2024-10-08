@@ -5,7 +5,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import "../App.css";
 import UseNavigate, {useNavigate,Link } from "react-router-dom";
 
-
 const SignUp = () => {
     const [errors,setErrors] = useState([]);
     const [loader, setLoader] = useState(false);

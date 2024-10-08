@@ -15,6 +15,10 @@ import ForgetPassword from "./components/ForgetPassword"
 import PasswordChangePage from "./components/ChangeYourPassword";
 import SnakeGame from "./components/pageNotFound";
 
+
+
+
+
 function App() {
   return (
    <Router>

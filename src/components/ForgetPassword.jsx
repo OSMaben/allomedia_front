@@ -3,21 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import  rocket from '../assets/images/rocket.gif';
-
+import {useForm} from 'react-hook-form';
 
 export default function ForgetPassword() {
-    const [email, setEmail] = useState("");
     const nav = useNavigate();
     const [isSent, setIsSent] = useState(false);
-    const handleValueChange = (e) => {
-        setEmail(e.target.value);
-    };
+
+    const {register,
+           handleSubmit,
+           formState: {errors}} = useForm();
+
+
 
     const handleFormSubmission = async (e) => {
-        e.preventDefault();
-
+        // e.preventDefault();
+        console.log(e)
         try {
-            const response = await axios.post('http://localhost:3001/api/reset-password', { email });
+            const response = await axios.post('http://localhost:3001/api/reset-password', { register });
             console.log(response.data);
             toast.success('A password reset link has been sent to your email!');
 
@@ -54,22 +56,32 @@ export default function ForgetPassword() {
                             </div>
                         ) : (
                             <div>
+
                                 <h1 className="text-4xl font-medium">Reset Password</h1>
                                 <p className="text-slate-500">Fill up the form to reset the password</p>
-                                <form method="POST" onSubmit={handleFormSubmission} className="my-10">
+                                <form method="POST" onSubmit={handleSubmit(handleFormSubmission)} className="my-10">
                                     <div className="flex flex-col space-y-5">
                                         <label htmlFor="email">
                                             <p className="font-medium text-slate-700 pb-2">Email Address</p>
                                             <input
+                                                {...register("email", {
+                                                    required: "email is required",
+                                                    pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+                                                })}
                                                 id="email"
                                                 name="email"
                                                 type="email"
-                                                value={email}
-                                                onChange={handleValueChange}
                                                 className="w-full py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
                                                 placeholder="Enter email address"
-                                                required
+
                                             />
+                                            {errors.email && (
+                                                <div className="text-red-500  p-2 mt-1 text-sm">
+                                                    {errors.email.message}
+                                                </div>
+                                            )}
+
+
                                         </label>
 
                                         <button
